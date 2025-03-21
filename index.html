@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Response Analysis Tool</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="text-center my-4">
+            <h1>English Response Analysis Tool</h1>
+            <p class="lead">Understand evaluation criteria for English language assessments</p>
+        </header>
+
+        <div class="row mb-4">
+            <div class="col-12 col-lg-5 mb-3">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="card-title">Analysis Setup</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="apiKey" class="form-label">Gemini API Key</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="apiKey" placeholder="Enter your Gemini API Key">
+                                <button class="btn btn-outline-secondary" type="button" id="toggleApiKey">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="form-text">Your API key is stored locally and never sent to our servers</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="responseMethod" class="form-label">Analysis Method</label>
+                            <select class="form-select" id="responseMethod">
+                                <option value="single">Single Response</option>
+                                <option value="batch">Multiple Responses</option>
+                            </select>
+                        </div>
+
+                        <!-- Single Response Input -->
+                        <div id="singleResponseInput">
+                            <div class="mb-3">
+                                <label for="question" class="form-label">Question</label>
+                                <input type="text" class="form-control" id="question" placeholder="What question was asked?">
+                            </div>
+                            <div class="mb-3">
+                                <label for="response" class="form-label">Response</label>
+                                <textarea class="form-control" id="response" rows="4" placeholder="Enter the English response to analyze"></textarea>
+                            </div>
+                            <button id="analyzeSingleBtn" class="btn btn-primary">Analyze Response</button>
+                        </div>
+
+                        <!-- Batch Response Input -->
+                        <div id="batchResponseInput" style="display: none;">
+                            <div class="mb-3">
+                                <label for="jsonInput" class="form-label">Responses (JSON Format)</label>
+                                <textarea class="form-control" id="jsonInput" rows="6" placeholder='[{"question":"What is your hobby?","response":"I like playing guitar..."},{"question":"Describe your hometown.","response":"My hometown is beautiful..."}]'></textarea>
+                                <div class="form-text">Format: array of objects with "question" and "response" fields</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="batchSize" class="form-label">Number of responses to analyze: <span id="batchSizeValue">3</span></label>
+                                <input type="range" class="form-range" min="1" max="10" value="3" id="batchSize">
+                                <div class="form-text">Larger numbers may take longer to process</div>
+                            </div>
+                            <button id="analyzeBatchBtn" class="btn btn-primary">Analyze Responses</button>
+                        </div>
+
+                        <!-- File Upload -->
+                        <div class="mt-4">
+                            <div class="mb-3">
+                                <label for="fileUpload" class="form-label">Upload JSON File</label>
+                                <input class="form-control" type="file" id="fileUpload" accept=".json">
+                            </div>
+                        </div>
+
+                        <!-- Example Data -->
+                        <div class="mt-4">
+                            <button id="loadExampleBtn" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-lightbulb me-2"></i>Load Example Data
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Section -->
+                <div id="progressSection" style="display: none;" class="mt-3">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-info text-white">
+                            <h3 class="card-title">Analysis Progress</h3>
+                        </div>
+                        <div class="card-body">
+                            <div id="progressStatus" class="text-center mb-2">Processing responses...</div>
+                            <div class="progress mb-3">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" id="progressBar" style="width: 0%"></div>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span id="progressCount">0/0 completed</span>
+                                <span id="progressTime">Estimated time: calculating...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-7">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-success text-white">
+                        <h3 class="card-title">Analysis Results</h3>
+                    </div>
+                    <div class="card-body p-5">
+                        <div id="resultsContainer"  class="results-scroll">
+                            <!-- Welcome Screen -->
+                            <div class="welcome-screen text-center p-4">
+                                <div class="display-6 mt-3 mb-4">
+                                    <i class="fas fa-search-plus text-primary"></i>
+                                </div>
+                                <h2>English Response Analysis</h2>
+                                <p class="lead mb-4">Enter a response to analyze or load example data to begin.</p>
+                                <div class="features-grid">
+                                    <div class="feature-item">
+                                        <div class="feature-icon text-primary">
+                                            <i class="fas fa-spell-check"></i>
+                                        </div>
+                                        <h4>Grammar Accuracy</h4>
+                                        <p>Evaluate grammatical correctness</p>
+                                    </div>
+                                    <div class="feature-item">
+                                        <div class="feature-icon text-primary">
+                                            <i class="fas fa-sitemap"></i>
+                                        </div>
+                                        <h4>Content Organization</h4>
+                                        <p>Assess structure and logical flow</p>
+                                    </div>
+                                    <div class="feature-item">
+                                        <div class="feature-icon text-primary">
+                                            <i class="fas fa-headphones"></i>
+                                        </div>
+                                        <h4>Listening Comprehension</h4>
+                                        <p>Measure question understanding</p>
+                                    </div>
+                                    <div class="feature-item">
+                                        <div class="feature-icon text-primary">
+                                            <i class="fas fa-book"></i>
+                                        </div>
+                                        <h4>Vocabulary</h4>
+                                        <p>Evaluate word choice and variety</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Analysis Results will appear here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for showing error messages -->
+        <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title" id="errorModalLabel">Error</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="errorModalBody">
+                        Error details will appear here.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="text-center mt-5 mb-4">
+            <p>English Response Analysis Tool &copy; 2025</p>
+            <p><small>This tool uses the Gemini API to analyze English responses. Your API key is required but never stored on our servers.</small></p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
